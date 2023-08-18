@@ -22,28 +22,6 @@ class group_dset(torch.utils.data.Dataset):
 
 
 
-# class RegCyclic(torch.utils.data.Dataset):
-#     def __init__(self, N):
-#         self.N = N
-
-#     def __getitem__(self, index):
-#         x_re = torch.randn((self.N,))
-#         x_im = torch.randn((self.N,))
-
-#         shift = torch.randint(low=1, high=self.N, size=(1,)).item()
-
-#         y_re = torch.roll(x_re, shift)
-#         y_im = torch.roll(x_im, shift)
-
-#         x = torch.complex(x_re, x_im)
-#         y = torch.complex(y_re, y_im)
-
-#         return x, y
-
-#     def __len__(self):
-#         return 1000
-
-
 # class RegBiCyclic(torch.utils.data.Dataset):
 #     def __init__(self, A, B):
 #         self.A = A

@@ -36,7 +36,10 @@ class dihedral(abstr_group):
         else:
             self.irrep_dims = [1]*2 + [2]*int((N - 1) / 2)
 
+
+
         reflection = torch.Tensor([0] + [N-i for i in range(1, N)]).long()
+            
         self.group_elems = torch.zeros(2*N, N)
         for i in range(N):
             cycle = torch.roll(torch.arange(0, N), i)
@@ -49,5 +52,15 @@ class dihedral(abstr_group):
             for j in range(2*N):
                 comp = self.group_elems[i][self.group_elems[j]]
                 self.cayley_table[i, j] = torch.argmin( ((comp.unsqueeze(0) - self.group_elems)**2).sum(-1) )
+
+        if N == 2:
+            C = [
+                [0, 1, 2, 3], 
+                [1, 0, 3, 2],
+                [2, 3, 0, 1],
+                [3, 2, 1, 0]
+                 ]
+            self.cayley_table = torch.Tensor(C)
+
         self.cayley_table = self.cayley_table.long()
 

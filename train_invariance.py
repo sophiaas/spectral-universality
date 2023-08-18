@@ -17,8 +17,8 @@ print('Using device: ', device)
 
 
 num_ep = 10000      #number of epochs
-batch_size = 16     
-weight = 100.   #coeffcient of regularization
+batch_size = 32
+weight = 10.   #coeffcient of regularization
 loginterval = 1
 
 
@@ -30,7 +30,7 @@ train_loader = torch.utils.data.DataLoader(dset, batch_size=batch_size, shuffle=
 
 
 model = spectral_net(group.order, group.irrep_dims).to(device)
-optimizer = torch.optim.SGD(model.parameters(), lr=0.001)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 # table = torch.Tensor([
 #     [0, 1, 2, 3, 4, 5],
@@ -43,7 +43,7 @@ optimizer = torch.optim.SGD(model.parameters(), lr=0.001)
 
 perms = perm_matrices(group.order).to(device)
 cayley_true = group.cayley_table.to(device)
-
+print(cayley_true)
 
 def train(epoch, data_loader):
     cayley = model.get_table()
