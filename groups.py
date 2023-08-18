@@ -15,7 +15,7 @@ class abstr_group():
 
      
 class cyclic(abstr_group):
-    def __init__(self, N):
+    def __init__(self, N): 
         self.order = N
         self.irrep_dims = [1]*N
 

@@ -9,20 +9,32 @@ from utils import *
 
 
 class spectral_net(nn.Module):
-    def __init__(self, group_order, irrep_dims):
+    def __init__(self, group_order, irrep_dims, orthognal_init=True):
         super().__init__()
 
         self.W = nn.ParameterList()
         for d_i in irrep_dims:
             W_i = torch.zeros((group_order - 1, d_i, d_i, 2))
-            k = 1. / d_i
-            W_i.uniform_(-k, k)
+            if orthognal_init:
+                torch.nn.init.orthogonal_(W_i) 
+            else:
+                k = 1. / d_i
+                W_i.uniform_(-k, k)
+
             W_i.requires_grad = True    
             self.W.append(Parameter(W_i))
 
         self.group_order = group_order
         self.irrep_dims = irrep_dims
 
+    def total_weight(self):
+        W_list = []
+        for W_i in self.W:
+            d_i = W_i.shape[-2]
+            Wcm = torch.view_as_complex(W_i)
+            W_cm_ext = pad_eye(Wcm).view(self.group_order, d_i * d_i)
+            W_list.append(W_cm_ext)
+        return torch.cat(W_list, dim=-1)
 
 
 
@@ -30,13 +42,11 @@ class spectral_net(nn.Module):
     def forward(self, x):
         res = []
         for W_i in self.W:
-            
             Wcm = torch.view_as_complex(W_i)
             W_cm_ext = pad_eye(Wcm)
 
             W_i_x = (W_cm_ext.unsqueeze(0) * x.unsqueeze(-1).unsqueeze(-1)).sum(1)
             W_i_x_T = torch.conj(W_i_x.transpose(-2, -1))
-
 
             res.append(kron_batched(W_i_x, W_i_x_T))
 
@@ -56,20 +66,25 @@ class spectral_net(nn.Module):
     
 
     def reg(self):
-        device = self.W[0].device
-        res_reg = 0.
-        eyecm = torch.complex(torch.eye(self.group_order), torch.zeros(self.group_order, self.group_order)).to(device)
+        # device = self.W[0].device
+        # res_reg = 0.
+        # eyecm = torch.complex(torch.eye(self.group_order), torch.zeros(self.group_order, self.group_order)).to(device)
 
-        for W_i in self.W:
+        # for W_i in self.W:
             
-            d_i = W_i.shape[-2]
-            Wcm = torch.view_as_complex(W_i)
-            W_cm_ext = pad_eye(Wcm).view(self.group_order, d_i * d_i)
-            W_cm_ext_T = torch.conj(W_cm_ext.transpose(-1, -2))
+        #     d_i = W_i.shape[-2]
+        #     Wcm = torch.view_as_complex(W_i)
+        #     W_cm_ext = pad_eye(Wcm).view(self.group_order, d_i * d_i)
+        #     W_cm_ext_T = torch.conj(W_cm_ext.transpose(-1, -2))
 
-            res_reg += (( (d_i **2) * eyecm - matmul_complex(W_cm_ext, W_cm_ext_T) ).abs()**2).mean()
+        #     res_reg += (( (d_i **2 / self.group_order) * eyecm - matmul_complex(W_cm_ext, W_cm_ext_T) ).abs()**2).mean()
 
-        return res_reg / len(self.W)
+        # return res_reg / len(self.W)
+        device = self.W[0].device
+        eyecm = torch.complex(torch.eye(self.group_order), torch.zeros(self.group_order, self.group_order)).to(device)
+        W_tot = self.total_weight()
+        W_tot_T = torch.conj(W_tot.transpose(-1, -2))
+        return ((self.group_order * eyecm - matmul_complex(W_tot, W_tot_T) ).abs()**2).mean()
 
 
 

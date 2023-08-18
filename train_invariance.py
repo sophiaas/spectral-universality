@@ -16,13 +16,13 @@ print('Using device: ', device)
 # device = 'cpu' 
 
 
-group = dihedral(4)
-
 num_ep = 10000      #number of epochs
 batch_size = 16     
-weight = .001    #coeffcient of regularization
+weight = 100.   #coeffcient of regularization
 loginterval = 1
 
+
+group = dihedral(2)
 
 
 dset = group_dset(group)   
@@ -30,18 +30,24 @@ train_loader = torch.utils.data.DataLoader(dset, batch_size=batch_size, shuffle=
 
 
 model = spectral_net(group.order, group.irrep_dims).to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+optimizer = torch.optim.SGD(model.parameters(), lr=0.001)
 
+# table = torch.Tensor([
+#     [0, 1, 2, 3, 4, 5],
+#     [1, 2, 0, 4, 5, 3],
+#     [2, 0, 1, 5, 3, 4],
+#     [3, 5, 4, 0, 2, 1],
+#     [4, 3, 5, 1, 0, 2],
+#     [5, 4, 3, 2, 1, 0]
+# ]).long().to(device)
 
 perms = perm_matrices(group.order).to(device)
 cayley_true = group.cayley_table.to(device)
 
 
 def train(epoch, data_loader):
-    # print('min, max ', model.W.abs().min(), model.W.abs().max())
     cayley = model.get_table()
     cayley_score = perm_frobenius(cayley_true, cayley, perms)
-    # cayley_score = is_isomorphic(cayley, cayley_true)
     print(f"Epoch: {epoch}, Cayley score: {cayley_score:.3}")
     print(cayley)
 
