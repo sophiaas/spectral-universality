@@ -37,9 +37,7 @@ class dihedral(abstr_group):
             self.irrep_dims = [1]*2 + [2]*int((N - 1) / 2)
 
 
-
         reflection = torch.Tensor([0] + [N-i for i in range(1, N)]).long()
-            
         self.group_elems = torch.zeros(2*N, N)
         for i in range(N):
             cycle = torch.roll(torch.arange(0, N), i)

@@ -6,12 +6,15 @@ from groups import *
 
 
 class group_dset(torch.utils.data.Dataset):
-    def __init__(self, group):
+    def __init__(self, group, std=1.):
         self.group = group
+        self.std = std
 
     def __getitem__(self, index):
-        x_re = torch.randn((self.group.order,))
-        x_im = torch.randn((self.group.order,))
+        x_re = self.std * torch.randn((self.group.order,))
+        x_im = self.std * torch.randn((self.group.order,))
+        # x_re = 2 * torch.rand((self.group.order,)) - 1.
+        # x_im = 2 * torch.rand((self.group.order,)) - 1.
         x = torch.complex(x_re, x_im)
         y = self.group.act(x)
 

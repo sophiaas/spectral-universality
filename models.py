@@ -9,7 +9,7 @@ from utils import *
 
 
 class spectral_net(nn.Module):
-    def __init__(self, group_order, irrep_dims, orthognal_init=True):
+    def __init__(self, group_order, irrep_dims, orthognal_init=False):
         super().__init__()
 
         self.W = nn.ParameterList()
@@ -48,7 +48,7 @@ class spectral_net(nn.Module):
             W_i_x = (W_cm_ext.unsqueeze(0) * x.unsqueeze(-1).unsqueeze(-1)).sum(1)
             W_i_x_T = torch.conj(W_i_x.transpose(-2, -1))
 
-            res.append(kron_batched(W_i_x, W_i_x_T))
+            res.append(matmul_complex(W_i_x, W_i_x_T))
 
         return res
    
@@ -61,30 +61,28 @@ class spectral_net(nn.Module):
         res_loss = torch.zeros(x.shape[0]).to(x.device)
         for (res_x_i, res_y_i) in zip(res_x, res_y):
             res_loss += ((res_x_i - res_y_i).abs()**2).mean(-1).mean(-1)
+            # AB_T = torch.view_as_real(matmul_complex(res_x_i, torch.conj(res_y_i.transpose(-2, -1))))
+            # res_loss -= (torch.diagonal(AB_T, dim1=-2, dim2=-3).sum(-1)**2).sum(-1)
         
         return res_loss / len(res_x)
     
 
     def reg(self):
-        # device = self.W[0].device
-        # res_reg = 0.
-        # eyecm = torch.complex(torch.eye(self.group_order), torch.zeros(self.group_order, self.group_order)).to(device)
-
-        # for W_i in self.W:
-            
-        #     d_i = W_i.shape[-2]
-        #     Wcm = torch.view_as_complex(W_i)
-        #     W_cm_ext = pad_eye(Wcm).view(self.group_order, d_i * d_i)
-        #     W_cm_ext_T = torch.conj(W_cm_ext.transpose(-1, -2))
-
-        #     res_reg += (( (d_i **2 / self.group_order) * eyecm - matmul_complex(W_cm_ext, W_cm_ext_T) ).abs()**2).mean()
-
-        # return res_reg / len(self.W)
         device = self.W[0].device
-        eyecm = torch.complex(torch.eye(self.group_order), torch.zeros(self.group_order, self.group_order)).to(device)
+
+        # d_diag = []
+        # for d_i in self.irrep_dims:
+        #     d_diag += [ 1. / (d_i ** 2) ] * (d_i ** 2)  
+        # eye_diag = self.group_order * torch.diag(torch.Tensor(d_diag))
+        # eyecm = torch.complex(eye_diag, torch.zeros(self.group_order, self.group_order)).to(device)
+
+        d_tot = torch.Tensor(self.irrep_dims).to(device).sum().float()
+        eyecm = (d_tot) * torch.complex(torch.eye(self.group_order), torch.zeros(self.group_order, self.group_order)).to(device)
+
+
         W_tot = self.total_weight()
         W_tot_T = torch.conj(W_tot.transpose(-1, -2))
-        return ((self.group_order * eyecm - matmul_complex(W_tot, W_tot_T) ).abs()**2).mean()
+        return ((eyecm - matmul_complex(W_tot, W_tot_T) ).abs()**2).mean()
 
 
 
