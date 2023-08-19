@@ -74,3 +74,36 @@ def perm_frobenius(A, B, perms):
 #         tmp = tmp[p][:, p]
 #         diffs[idx] = ((tmp - B)**2).mean()
 #     return torch.min(diffs)
+
+
+def gen_partitions(n):
+    a = [0 for i in range(n + 1)]
+    k = 1
+    y = n - 1
+    while k != 0:
+        x = a[k - 1] + 1
+        k -= 1
+        while 2 * x <= y:
+            a[k] = x
+            y -= x
+            k += 1
+        l = k + 1
+        while x <= y:
+            a[k] = x
+            a[l] = y
+            yield a[:k + 2]
+            x += 1
+            y -= 1
+        a[k] = x + y
+        y = x + y - 1
+        yield a[:k + 1]
+
+def hook_length(P, N):
+    P = sorted(P, reverse=True)
+    res = 1
+    for i in range(len(P)):
+        for j in range(P[i]):
+            cells_row = P[i] - j
+            cells_col = len([k for k in P[i:] if (k >= j + 1)])
+            res *= cells_row + cells_col - 1
+    return int(float(math.factorial(N)) / float(res))

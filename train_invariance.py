@@ -21,10 +21,10 @@ batch_size = 4
 weight = 10.        #coeffcient of regularization
 std = 1.
 loginterval = 1
+  
 
-
-group = dihedral(3)
-
+group = symmetric(3)
+group.check_dims()
 
 dset = group_dset(group, std)   
 train_loader = torch.utils.data.DataLoader(dset, batch_size=batch_size, shuffle=True)

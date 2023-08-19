@@ -1,7 +1,9 @@
 import numpy as np
 import torch
 import math
+import itertools as it
 
+from utils import *
 
 class abstr_group():
     def __init__(self):
@@ -12,6 +14,11 @@ class abstr_group():
     def act(self, x):
         g = torch.randint(low=0, high=self.order, size=(1,)).item()
         return x[self.cayley_table[g]]
+    
+    def check_dims(self):
+        irrep_dims = torch.tensor(self.irrep_dims)
+        assert (irrep_dims**2).sum().item() == self.order
+
 
      
 class cyclic(abstr_group):
@@ -62,3 +69,23 @@ class dihedral(abstr_group):
 
         self.cayley_table = self.cayley_table.long()
 
+
+
+class symmetric(abstr_group):
+    def __init__(self, N):
+        self.order = math.factorial(N)
+
+        self.irrep_dims = [hook_length(P, N) for P in list(gen_partitions(N))]
+        
+        self.group_elems = torch.zeros(self.order, N)
+        for i, perm in enumerate(it.permutations(range(N))):
+            self.group_elems[i] = torch.Tensor(list(perm))
+        self.group_elems = self.group_elems.long()
+
+        self.cayley_table = torch.zeros(self.order, self.order)
+        for i in range(self.order):
+            for j in range(self.order):
+                comp = self.group_elems[i][self.group_elems[j]]
+                self.cayley_table[i, j] = torch.argmin( ((comp.unsqueeze(0) - self.group_elems)**2).sum(-1) )
+
+        self.cayley_table = self.cayley_table.long()
