@@ -107,3 +107,11 @@ def hook_length(P, N):
             cells_col = len([k for k in P[i:] if (k >= j + 1)])
             res *= cells_row + cells_col - 1
     return int(float(math.factorial(N)) / float(res))
+
+
+
+if __name__ == "__main__":
+    for i in range(1, num_ep):
+        print(f'Epoch {i}')
+        train(i, train_loader)
+

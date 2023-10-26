@@ -6,10 +6,10 @@ import itertools as it
 from utils import *
 
 class abstr_group():
-    def __init__(self):
-        self.order = None
-        self.cayley_table = None
-        self.irrep_dims = None
+    def __init__(self, order, cayley_table, irrep_dims):
+        self.order = order
+        self.cayley_table = cayley_table
+        self.irrep_dims = irrep_dims
 
     def act(self, x):
         g = torch.randint(low=0, high=self.order, size=(1,)).item()
@@ -89,3 +89,30 @@ class symmetric(abstr_group):
                 self.cayley_table[i, j] = torch.argmin( ((comp.unsqueeze(0) - self.group_elems)**2).sum(-1) )
 
         self.cayley_table = self.cayley_table.long()
+
+
+def direct_product(group_1, group_2): 
+    order_1 = group_1.order    
+    order_2 = group_2.order
+    order_res = order_1 * order_2
+
+    cayley_1 = group_1.cayley_table
+    cayley_2 = group_2.cayley_table
+    cayley_res = torch.zeros(order_res, order_res)
+    for i_1 in range(order_1):
+        for i_2 in range(order_2):
+                for j_1 in range(order_1):
+                    for j_2 in range(order_2):
+                        g_1 = cayley_1[i_1, j_1]
+                        g_2 = cayley_2[i_2, j_2]
+                        cayley_res[i_1*order_2 + i_2, j_1*order_2 + j_2] = g_1*order_2 + g_2
+    cayley_res = cayley_res.long()
+
+    irrep_dims_1 = group_1.irrep_dims
+    irrep_dim_2 = group_2.irrep_dims
+    irrep_dims_res = []
+    for d_1 in irrep_dims_1:
+        for d_2 in irrep_dim_2:
+            irrep_dims_res.append(d_1 * d_2)
+
+    return abstr_group(order_res, cayley_res, irrep_dims_res)

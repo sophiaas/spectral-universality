@@ -23,8 +23,10 @@ std = 1.
 loginterval = 1
   
 
-group = symmetric(3)
-group.check_dims()
+group = dihedral(4)
+# group = direct_product(cyclic(2), cyclic(3))
+# group = direct_product(cyclic(2), direct_product(cyclic(2), cyclic(2)))
+# group.check_dims()
 
 dset = group_dset(group, std)   
 train_loader = torch.utils.data.DataLoader(dset, batch_size=batch_size, shuffle=True)
