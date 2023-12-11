@@ -8,7 +8,7 @@ Implementation of a complex-valued Power-Spectral Network trained via contrastiv
 As shown in the companion paper, at convergence the network learns all the irreducible unitary representations of the group. In particular, the multiplication table can be extracted from its weighs.
 
 
-We provide implementations of the model and its training in both `PyTorch` and in `JAX`.
+We provide implementations of the model and its training in both `PyTorch` and `JAX`.
 
 
 ## Setup
