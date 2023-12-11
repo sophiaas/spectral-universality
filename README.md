@@ -5,7 +5,7 @@
 
 ## Description
 Implementation of a complex-valued Power-Spectral Network trained via contrastive learning on an invariance objective for a finite group.
-As shown in the companion paper, at convergence the network learns all the irreducible unitary representations of the group. In particular, the multiplication table can be extracted from its weighs.
+As shown in the companion paper, at convergence the network learns all the irreducible unitary representations of the group. In particular, the multiplication table can be extracted from its weights.
 
 
 We provide implementations of the model and its training in both `PyTorch` and `JAX`.
