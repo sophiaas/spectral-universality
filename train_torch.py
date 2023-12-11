@@ -1,11 +1,7 @@
-import numpy as np
 import torch
-from PIL import Image
-import matplotlib.pyplot as plt
-import math
 
 from utils import *
-from models import *
+from models_torch import *
 from datasets import *      
 from groups import *
 
@@ -13,48 +9,66 @@ from groups import *
 torch.cuda.empty_cache()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print('Using device: ', device)
-# device = 'cpu' 
+# device = 'cpu'
 
 
-num_ep = 10000      #number of epochs
+"""
+Parameters of te model
+"""
+num_ep = 50   #number of epochs
 batch_size = 4
 weight = 10.        #coeffcient of regularization
 std = 1.
 loginterval = 1
-  
+noise = 0.
 
-group = dihedral(4)
-# group = direct_product(cyclic(2), cyclic(3))
-# group = direct_product(cyclic(2), direct_product(cyclic(2), cyclic(2)))
-# group.check_dims()
 
-dset = group_dset(group, std)   
+"""
+Initialize group
+"""
+group = cyclic(4)
+group.check_dims()
+
+
+"""
+Initialize dataset
+"""
+dset = group_dset(group, std, noise)
 train_loader = torch.utils.data.DataLoader(dset, batch_size=batch_size, shuffle=True)
 
 
+"""
+Initialize model and optimizer
+"""
 model = spectral_net(group.order, group.irrep_dims).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 
-perms = perm_matrices(group.order).to(device)
-cayley_true = group.cayley_table.to(device)
+"""
+Initialize Cayley table
+"""
+perms = perm_matrices(group.order)
+cayley_true = group.cayley_table
 print(cayley_true)
 
+
+"""
+Training loop
+"""
 def train(epoch, data_loader):
-    cayley = model.get_table()
-    cayley_score = perm_frobenius(cayley_true, cayley, perms)
+    cayley = model.get_table().cpu().numpy()
+    cayley_score = perm_frobenius(cayley_true, cayley, perms, group.order)
     print(f"Epoch: {epoch}, Cayley score: {cayley_score:.3}")
     print(cayley)
 
-    
+
     for batch_idx, (x, y) in enumerate(data_loader):
 
-        model.train()   
+        model.train()
         optimizer.zero_grad()
 
-        x = x.to(device) 
+        x = x.to(device)
         y = y.to(device)
-
 
         loss = model.loss(x, y).mean()
         reg = model.reg()
@@ -68,9 +82,16 @@ def train(epoch, data_loader):
             print(f"Epoch: {epoch}, Batch: {batch_idx} of {len(data_loader)} Loss: {loss:.3} Reg: {reg:.3}")
 
 
-  
+
 
 if __name__ == "__main__":
-    for i in range(1, num_ep):
+    for i in range(1, num_ep + 1):
         print(f'Epoch {i}')
         train(i, train_loader)
+
+    # cayley = model.get_table()
+    # cayley_score = perm_frobenius(cayley_true, cayley, perms)
+
+    # outfile = open(f'./accuracy_results_{noise}.txt', 'a+')
+    # outfile.write(str(cayley_score.item())[:4] + '\n')
+    # outfile.close()

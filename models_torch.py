@@ -1,18 +1,25 @@
 import torch
 from torch.nn.parameter import Parameter
-import torch.nn.functional as F
-import numpy as np
 from torch import nn
-import math
 
 from utils import *
+
+
+def matmul_complex(t1, t2):
+    return torch.view_as_complex(torch.stack((t1.real @ t2.real - t1.imag @ t2.imag, t1.real @ t2.imag + t1.imag @ t2.real),dim=-1))
+
+
+def pad_eye(W_i):
+    d_i = W_i.shape[-1]
+    eyecm = torch.complex(torch.eye(d_i) , torch.zeros(d_i, d_i)).to(W_i.device)
+    return torch.cat([eyecm.unsqueeze(0), W_i], dim=0)
 
 
 class spectral_net(nn.Module):
     def __init__(self, group_order, irrep_dims, orthognal_init=False):
         super().__init__()
 
-        self.W = nn.ParameterList()
+        self.W = nn.ParameterList() 
         for d_i in irrep_dims:
             W_i = torch.zeros((group_order - 1, d_i, d_i, 2))
             if orthognal_init:
@@ -87,6 +94,9 @@ class spectral_net(nn.Module):
 
 
 
+    """
+    Function recovering the Cayley table from the weights of the model
+    """
     def get_table(self):
         device = self.W[0].device 
 
@@ -108,5 +118,7 @@ class spectral_net(nn.Module):
         # res[-1, :] = pad
         # res[:, -1] = pad
         return res.detach()
+
+
 
 

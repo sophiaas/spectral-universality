@@ -1,22 +1,27 @@
 import torch
-from torchvision import transforms, datasets
-import numpy as np
+from numpy import random
 
 from groups import *
 
 
+"""
+Contrastive learning dataset for groups. A datapoint is a pair of (noisy) complex vectors in the same orbit. 
+"""
 class group_dset(torch.utils.data.Dataset):
-    def __init__(self, group, std=1.):
+    def __init__(self, group, std=1., noise=0.):
         self.group = group
         self.std = std
+        self.noise = noise
 
     def __getitem__(self, index):
-        x_re = self.std * torch.randn((self.group.order,))
-        x_im = self.std * torch.randn((self.group.order,))
-        # x_re = 2 * torch.rand((self.group.order,)) - 1.
-        # x_im = 2 * torch.rand((self.group.order,)) - 1.
-        x = torch.complex(x_re, x_im)
+        x_re = self.std * random.randn(self.group.order) 
+        x_im = self.std * random.randn(self.group.order)
+        x = x_re + 1j * x_im
         y = self.group.act(x)
+        
+        perturb_re = self.noise * random.randn(self.group.order) 
+        perturb_im = self.noise * random.randn(self.group.order) 
+        x += perturb_re + 1j * perturb_im
 
         return x, y
 
@@ -24,38 +29,3 @@ class group_dset(torch.utils.data.Dataset):
         return 1000
 
 
-
-# class RegBiCyclic(torch.utils.data.Dataset):
-#     def __init__(self, A, B):
-#         self.A = A
-#         self.B = B
-
-#     def __getitem__(self, index):
-#         x_re_A = torch.randn((self.A,))
-#         x_im_A = torch.randn((self.A,))
-
-#         shift = torch.randint(low=0, high=self.A, size=(1,)).item()  #The index needs to start from 0 since in a product of groups the identities matter
-
-#         y_re_A = torch.roll(x_re_A, shift)
-#         y_im_A = torch.roll(x_im_A, shift)
-
-#         x_re_B = torch.randn((self.B,))
-#         x_im_B = torch.randn((self.B,))
-
-#         shift = torch.randint(low=0, high=self.B, size=(1,)).item()  #The index needs to start from 0 since in a product of groups the identities matter
-
-#         y_re_B = torch.roll(x_re_B, shift)
-#         y_im_B = torch.roll(x_im_B, shift)
-
-
-#         x_re = torch.cat([x_re_A, x_re_B], dim=-1)
-#         x_im =torch.cat([x_im_A, x_im_B], dim=-1)
-#         y_re = torch.cat([y_re_A, y_re_B], dim=-1)
-#         y_im =torch.cat([y_im_A, y_im_B], dim=-1)
-#         x = torch.complex(x_re, x_im)
-#         y = torch.complex(y_re, y_im)
-
-#         return x, y
-
-#     def __len__(self):
-#         return 1000
