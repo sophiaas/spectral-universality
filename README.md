@@ -21,5 +21,5 @@ pip install -r requirements.txt
 ## Groups
 The file `groups.py` provides implementations of various finite groups, including cyclic, dihedral and symmetric.
 
-## Train
-In order to train the models in `PyTorch` and in `JAX`, run the files `train_torch.py` and `train_JAX.py` respectively. The training parameters are set up at the beginning of these files.
+## Training
+In order to train the models in `PyTorch` and in `JAX`, run the files `train_torch.py` and `train_JAX.py` respectively. The training parameters are set at the beginning of these files.
