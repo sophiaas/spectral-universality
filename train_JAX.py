@@ -16,7 +16,7 @@ print(f'Using device: {device}')
 """
 Parameters of te model
 """
-num_ep = 50  #number of epochs
+num_ep = 100  #number of epochs
 batch_size = 4
 rho = 10.        #coeffcient of regularization
 std = 1.    
@@ -27,7 +27,7 @@ noise = 0.
 """
 Initialize group
 """
-group = cyclic(4)
+group = dihedral(3)
 group.check_dims()
 
 
@@ -60,7 +60,8 @@ Weight update function
 """
 @jit
 def update(opt_state, x, y, epoch):
-    loss_val, grads = value_and_grad(lambda V, a, b: loss(V, a, b).mean() + rho * reg(V, group.irrep_dims, group.order))(get_params(opt_state), x, y)
+    loss_fun = lambda V, a, b: loss(V, a, b).mean() + rho * reg(V, group.irrep_dims, group.order)
+    loss_val, grads = value_and_grad(loss_fun)(get_params(opt_state), x, y)
     return loss_val, update_fun(epoch, grads, opt_state)
 
 

@@ -41,7 +41,6 @@ def forward(W, x):
 
         W_i_x = (jnp.expand_dims(W_cm_ext, 0) * jnp.expand_dims(jnp.expand_dims(x, -1), -1)).sum(1)
         W_i_x_T = jnp.conjugate(jnp.transpose(W_i_x, axes=(0, -1, -2)))
-
         res.append(W_i_x @ W_i_x_T)
     return res
    
@@ -53,7 +52,7 @@ def loss(W, x, y):
 
     res_loss = jnp.zeros(x.shape[0])
     for (res_x_i, res_y_i) in zip(res_x, res_y):
-        res_loss += (jnp.abs((res_x_i - res_y_i))**2).mean(-1).mean(-1)
+        res_loss += (jnp.abs(res_x_i - res_y_i)**2).mean(-1).mean(-1)
     
     return res_loss / len(res_x)
     
@@ -64,7 +63,7 @@ def reg(W, irrep_dims, group_order):
 
     W_tot = total_weight(W, irrep_dims, group_order)
     W_tot_T = jnp.conjugate(jnp.transpose(W_tot, axes=(-1, -2)))
-    return (jnp.abs((eyecm - W_tot @ W_tot_T ))**2).mean()
+    return (jnp.abs(eyecm - W_tot @ W_tot_T )**2).mean()
 
 
 
