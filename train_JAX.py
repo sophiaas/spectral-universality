@@ -14,7 +14,7 @@ print(f'Using device: {device}')
 
 
 """
-Parameters of te model
+Parameters of the model
 """
 num_ep = 100  #number of epochs
 batch_size = 4
