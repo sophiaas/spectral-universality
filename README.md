@@ -1,6 +1,6 @@
 # Harmonics of Learning
 <p align="center">
-<img src="rot_harm.png" alt="Rotational harmonics" width="200" />
+<img src="figs/harmonics-rotation-wide-fig.png" alt="Rotational harmonics" width="200" />
 </p>
 
 ## Description
