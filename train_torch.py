@@ -23,6 +23,7 @@ loginterval = 1
 noise = 0.
 
 
+
 """
 Initialize group
 """
