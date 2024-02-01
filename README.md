@@ -6,8 +6,7 @@
 ## Description
 This repository accompanies the paper:
 
-[Harmonics of Learning: Universal Fourier Features Emerge in Invariant Networks (2023)](https://arxiv.org/abs/2312.08550)<br>
-Giovanni Luca Marchetti, Christopher Hillar, Danica Kragic, Sophia Sanborn
+Harmonics of Learning: Universal Fourier Features Emerge in Invariant Networks (2024)
 
 Here, we provide an implementation of a complex-valued Power-Spectral Network trained via contrastive learning on an invariance objective for a finite group. As shown in the companion paper, at convergence the network learns all the irreducible unitary representations of the group. In particular, the multiplication table can be extracted from its weights.
 
